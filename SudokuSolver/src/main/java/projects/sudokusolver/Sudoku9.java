@@ -13,8 +13,9 @@ import org.apache.commons.io.FileUtils;
  */
 public class Sudoku9 {
 
+    private static final char undefined = 'x';
     private String alphabet = "123456789";
-    private SudokuField[][] field = new SudokuField[9][];
+    private SudokuField[][] fields = new SudokuField[9][];
 
     public class SudokuField {
 
@@ -38,10 +39,13 @@ public class Sudoku9 {
         public SudokuField() {
             for (int i = 0; i < canContainElement.length; i++) {
                 canContainElement[i] = true;
-                
             }
         }
-        
+
+        @Override
+        public String toString() {
+            return "SudokuField{" + "content=" + content + ", canContainElement=" + canContainElement + '}';
+        }
     }
 
     public Sudoku9(File file) {
@@ -52,12 +56,24 @@ public class Sudoku9 {
             }
             for (int i = 0; i < lines.size(); i++) {
                 String currentLine = lines.get(i).trim();
-                if(currentLine.length() != 9) {
+                //Check constraint
+                if (currentLine.length() != 9) {
                     throw new IllegalArgumentException("The line " + currentLine + " does not contain exactly 9 characters");
                 }
+                //Initialize the current field array
+                fields[i] = new SudokuField[9];
+                //Iterate over the fields (horizontally)
                 for (int j = 0; j < 9; j++) {
                     char c = currentLine.charAt(j);
-                    if(c == x)
+                    if (c == undefined) {
+                        fields[i][j] = new SudokuField();
+                    } else {
+                        int index = alphabet.indexOf(c);
+                        if (index == -1) {
+                            throw new IllegalArgumentException("Character not in alphabet or undefined: " + c);
+                        }
+                        fields[i][j] = new SudokuField(index);
+                    }
                 }
             }
         } catch (IOException ex) {
