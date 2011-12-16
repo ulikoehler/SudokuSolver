@@ -2,6 +2,7 @@ package projects.sudokusolver;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 
@@ -32,6 +33,11 @@ public class Sudoku9 {
             return possibilities[index];
         }
 
+        public void setContent(int content) {
+            this.content = content;
+            Arrays.fill(possibilities, false); 
+        }
+
         /**
          * @return The number of current possibilities begin true
          */
@@ -44,6 +50,18 @@ public class Sudoku9 {
             }
             return ctr;
         }
+        
+        /**
+         * @return The first alphabet index for which the possibility is true
+         */
+        public int getSinglePossibility() {
+            for (int i = 0; i < possibilities.length; i++) {
+                if(possibilities[i]) {
+                    return i;
+                }
+            }
+            throw new IllegalStateException("No possibility found!");
+        }
 
         /**
          * Initializes a Sudoku field with a specific content
@@ -51,9 +69,7 @@ public class Sudoku9 {
          */
         public SudokuField(int content) {
             this.content = content;
-            for (int i = 0; i < possibilities.length; i++) {
-                possibilities[i] = false;
-            }
+            Arrays.fill(possibilities, false);
         }
 
         /**
@@ -67,7 +83,8 @@ public class Sudoku9 {
 
         @Override
         public String toString() {
-            return "SudokuField{" + "content=" + content + ", canContainElement=" + possibilities + '}';
+            return "SudokuField{" + "content=" + content
+                    + ", canContainElement=" + possibilities + '}';
         }
     }
 
@@ -81,7 +98,8 @@ public class Sudoku9 {
                 String currentLine = lines.get(i).trim();
                 //Check constraint
                 if (currentLine.length() != 9) {
-                    throw new IllegalArgumentException("The line " + currentLine + " does not contain exactly 9 characters");
+                    throw new IllegalArgumentException("The line " + currentLine
+                            + " does not contain exactly 9 characters");
                 }
                 //Initialize the current field array
                 fields[i] = new SudokuField[9];
@@ -93,7 +111,8 @@ public class Sudoku9 {
                     } else {
                         int index = alphabet.indexOf(c);
                         if (index == -1) {
-                            throw new IllegalArgumentException("Character not in alphabet or undefined: " + c);
+                            throw new IllegalArgumentException("Character not in alphabet or undefined: "
+                                    + c);
                         }
                         fields[i][j] = new SudokuField(index);
                     }
@@ -164,5 +183,34 @@ public class Sudoku9 {
             }
         }
         return ret;
+    }
+
+    public int getNumRows() {
+        return 9;
+    }
+
+    public int getNumCols() {
+        return 9;
+    }
+
+    public int getNumFields() {
+        return 9;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < getNumRows(); i++) {
+            SudokuField[] row = getRow(i);
+            for(SudokuField field : row) {
+                if(field.getContent() == -1) {
+                    builder.append(undefined);
+                } else {
+                    builder.append(alphabet.charAt(field.getContent()));
+                }
+            }
+            builder.append('\n');
+        }
+        return builder.toString().trim();
     }
 }
