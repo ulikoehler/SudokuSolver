@@ -1,7 +1,9 @@
 package projects.sudokusolver;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Set;
 import projects.sudokusolver.Sudoku9.SudokuField;
 
@@ -14,17 +16,30 @@ public class Sudoku9Solver {
     public static void main(String[] args) throws Exception {
         InputStream in =
                 Sudoku9Solver.class.getResourceAsStream("/wikipedia.sud");
+        //Read the sudoku
         Sudoku9 sudoku = new Sudoku9(in);
-        calculatePossibilities(sudoku);
-        findSinglePossibilities(sudoku);
+        while (!sudoku.isSolved()) {
+            calculatePossibilities(sudoku);
+            findSinglePossibilities(sudoku);
+        }
+        //Print the final solution
         System.out.println(sudoku.toString());
+        System.out.println(sudoku.isSolved());
+    }
+    
+    private List<Sudoku9> splitSudokuTree() {
+        List<Sudoku9> solutions = Lists.newLinkedList();
+        //Identify the field with the lowest number of possible solutions
+//        int bestColumn
+        return solutions;
     }
 
     /**
      * Iteratetively discover fields with only one possibility left and
      * therefore solve easy sudokus
      */
-    private static void findSinglePossibilities(Sudoku9 sudoku) {
+    private static boolean findSinglePossibilities(Sudoku9 sudoku) {
+        boolean foundPossibility = false;
         mainloop:
         while (true) {
             for (int i = 0; i < sudoku.getNumRows(); i++) {
@@ -33,11 +48,12 @@ public class Sudoku9Solver {
                     SudokuField field = row[j];
                     if (field.getContent() == -1 && field.getNumPossibilities()
                             == 1) {
-                        System.out.println("Found single possibility at index ("
-                                + (i + 1) + ", " + (j + 1) + "): "
-                                + (sudoku.getAlphabet().charAt(field.getSinglePossibility())));
+//                        System.out.println("Found single possibility at index ("
+//                                + (i + 1) + ", " + (j + 1) + "): "
+//                                + (sudoku.getAlphabet().charAt(field.getSinglePossibility())));
                         field.setContent(field.getSinglePossibility());
                         calculatePossibilities(sudoku);
+                        foundPossibility = true;
                         continue mainloop;
                     }
                 }
@@ -45,6 +61,7 @@ public class Sudoku9Solver {
             //No single possibility found, so stop the iteration
             break mainloop;
         }
+        return foundPossibility;
     }
 
     private static void calculatePossibilities(Sudoku9 sudoku) {

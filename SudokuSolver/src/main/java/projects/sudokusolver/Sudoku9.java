@@ -1,5 +1,6 @@
 package projects.sudokusolver;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -11,11 +12,11 @@ import org.apache.commons.io.IOUtils;
  * Alphabet: A collection of characters representing the 
  * @author uli
  */
-public class Sudoku9 {
+public final class Sudoku9 {
 
     private static final char undefined = 'x';
     private String alphabet = "123456789";
-    private SudokuField[][] fields = new SudokuField[9][]; //Rows first
+    private SudokuField[][] fields = new SudokuField[getNumRows()][]; //Rows first
 
     public class SudokuField {
 
@@ -35,7 +36,7 @@ public class Sudoku9 {
 
         public void setContent(int content) {
             this.content = content;
-            Arrays.fill(possibilities, false); 
+            Arrays.fill(possibilities, false);
         }
 
         /**
@@ -50,13 +51,13 @@ public class Sudoku9 {
             }
             return ctr;
         }
-        
+
         /**
          * @return The first alphabet index for which the possibility is true
          */
         public int getSinglePossibility() {
             for (int i = 0; i < possibilities.length; i++) {
-                if(possibilities[i]) {
+                if (possibilities[i]) {
                     return i;
                 }
             }
@@ -80,11 +81,50 @@ public class Sudoku9 {
                 possibilities[i] = true;
             }
         }
+        
+        /**
+         * Constructs a new SudokuField instance 
+         */
+        public SudokuField(SudokuField other) {
+            this.content = other.content;
+            this.possibilities = Arrays.copyOf(other.possibilities, other.possibilities.length);
+        }
+        
+        /**
+         * 
+         * @return All list of possibilities being true
+         */
+        public List<Integer> getPossibilities() {
+            List<Integer> ret = Lists.newArrayListWithCapacity(possibilities.length);
+            for (int i = 0; i < possibilities.length; i++) {
+                boolean possibility = possibilities[i];
+                if(possibility) {
+                    ret.add(i);
+                }
+            }
+            return ret;
+        }
 
         @Override
         public String toString() {
             return "SudokuField{" + "content=" + content
                     + ", canContainElement=" + possibilities + '}';
+        }
+    }
+    
+    /**
+     * Deep-copy (in relation to SudokuFields) constructor
+     */
+    public Sudoku9(Sudoku9 other) {
+        //Initialize the rows
+        for (int i = 0; i < getNumRows(); i++) {
+            fields[i] = new SudokuField[getNumCols()];
+        }
+        //Copy all fields
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumCols(); j++) {
+                fields[i][j] = new SudokuField(other.getField(i, j));
+            }
         }
     }
 
@@ -202,8 +242,8 @@ public class Sudoku9 {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < getNumRows(); i++) {
             SudokuField[] row = getRow(i);
-            for(SudokuField field : row) {
-                if(field.getContent() == -1) {
+            for (SudokuField field : row) {
+                if (field.getContent() == -1) {
                     builder.append(undefined);
                 } else {
                     builder.append(alphabet.charAt(field.getContent()));
@@ -212,5 +252,32 @@ public class Sudoku9 {
             builder.append('\n');
         }
         return builder.toString().trim();
+    }
+    
+    public List<SudokuField> getAllFields() {
+        List<SudokuField> ret = Lists.newArrayListWithCapacity(getNumRows()*getNumCols());
+        for (int i = 0; i < getNumRows(); i++) {
+            SudokuField[] row = getRow(i);
+            for (int j = 0; j < row.length; j++) {
+                ret.add(row[i]);
+            }
+        }
+        return ret;
+    }
+
+    public boolean isSolved() {
+        for (int i = 0; i < getNumRows(); i++) {
+            SudokuField[] row = getRow(i);
+            for (int j = 0; j < row.length; j++) {
+                if (row[i].getContent() == -1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    public int getAlphabetSize() {
+        return alphabet.length();
     }
 }
